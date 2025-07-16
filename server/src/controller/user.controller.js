@@ -27,7 +27,7 @@ const registerUser = asyncHandler(async (req, res) => {
   });
 
   if (existedUser) {
-    throw new ApiError(401, "User already exist with this email");
+    throw new ApiError(400, "User already exist with this email");
   }
 
   //otp generate
@@ -76,7 +76,7 @@ const verifyOTP = asyncHandler(async (req, res) => {
   });
 
   if (!existingOtp || existingOtp.expiresAt < new Date()) {
-    throw new ApiError(401, "otp expired or Invalid");
+    throw new ApiError(400, "otp expired or Invalid");
   }
 
   await prisma.user.update({
@@ -103,11 +103,12 @@ const generateAccessAndRefreshToken = async (userId) => {
       },
     });
     if (!userFromDB) {
-      throw new ApiError(401, "User not found");
+      throw new ApiError(400, "User not found");
     }
     const accessToken = generateAccessToken(userFromDB);
     const refreshToken = generateRefreshToken(userFromDB);
-    userFromDB.refreshToken = refreshToken;
+ 
+    //userFromDB.refreshToken = refreshToken;
     await prisma.user.update({
       where: {
         id: userFromDB.id,
@@ -143,7 +144,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
   if (!userFromDB) {
     throw new ApiError(
-      401,
+      400,
       "Account does not exist with this email. Please register first"
     );
   }
@@ -153,17 +154,27 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 
   if (!(await bcrypt.compare(password, userFromDB.password))) {
-    throw new ApiError(401, "Password is wrong. Please try again");
+    throw new ApiError(400, "Password is wrong. Please try again");
   }
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
     userFromDB.id
   );
-  const { password: _, refreshToken: __, ...userSafeData } = userFromDB;
+
+  const userResponse = {
+  id: userFromDB.id,
+  name: userFromDB.name,
+  email: userFromDB.email,
+  emailVerified: userFromDB.emailVerified,
+ 
+};
+
 
   const options = {
     httpOnly: true,
     secure: true,
+    sameSite: "strict",     
+    maxAge: 7 * 24 * 60 * 60 * 1000 
   };
 
   return res
@@ -174,7 +185,7 @@ const loginUser = asyncHandler(async (req, res) => {
       new ApiResponse(
         201,
         {
-          user: userSafeData,
+          user: userResponse,
           accessToken,
         },
         "Logged In successfully"
@@ -207,27 +218,30 @@ const logoutUser = asyncHandler(async (req, res) => {
 //refresh access token
 const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken =
-    req.cookies.refreshToken || req.body.refreshToken;
-  if (!incomingRefreshToken) {
+    req.cookies.refreshToken || req.body.refreshToken; 
+  if (!incomingRefreshToken ) {
     throw new ApiError(401, "Unauthorized access");
   }
 
   try {
-    const decodedToken = jwt.verify(
+    const decodedToken =  jwt.verify(
       incomingRefreshToken,
       process.env.REFRESH_TOKEN_SECRET
     );
+    
+    
     if (!decodedToken) {
       throw new ApiError(401, "Invalid refresh token! Unauthorized request");
     }
     const userFromDB = await prisma.user.findUnique({
       where: {
-        id: decodedToken.id,
+        id: decodedToken.userId,
       },
     });
+ 
     if (!userFromDB) {
       throw new ApiError(
-        400,
+        401,
         "Invalid refresh token! user not found in database"
       );
     }
@@ -237,12 +251,16 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 
     const options = {
-      httpOnly: true,
-      secure: true,
-    };
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",     
+    maxAge: 7 * 24 * 60 * 60 * 1000 
+  };
 
-    const { accessToken, newRefreshToken } =
-      await generateAccessAndRefreshToken();
+    const { accessToken, refreshToken:newRefreshToken } =
+      await generateAccessAndRefreshToken(userFromDB.id);
+     
+      
     return res
       .status(200)
       .cookie("accessToken", accessToken, options)
@@ -255,7 +273,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         )
       );
   } catch (error) {
-    throw new ApiError(400, error?.message || "Invalid refresh token");
+    throw new ApiError(401, error?.message || "Invalid refresh token");
   }
 });
 
