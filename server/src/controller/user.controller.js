@@ -158,7 +158,7 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(403, "Please verify your email before logging in.");
   }
 
-  if (!(await bcrypt.compare(password, userFromDB.password))) {
+  if (!(bcrypt.compare(password, userFromDB.password))) {
     throw new ApiError(400, "Password is wrong. Please try again");
   }
 
@@ -173,10 +173,10 @@ const loginUser = asyncHandler(async (req, res) => {
     emailVerified: userFromDB.emailVerified,
   };
 
-  const options = {
+ const options = {
     httpOnly: true,
     secure: true,
-    sameSite: "strict",
+    sameSite: "None",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   };
 
@@ -433,7 +433,7 @@ const googleOAuthLogin = asyncHandler(async (req, res) => {
   const options = {
     httpOnly: true,
     secure: true,
-    sameSite: "strict",
+    sameSite: "None",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   };
   return res
