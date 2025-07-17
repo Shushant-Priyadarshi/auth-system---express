@@ -158,7 +158,7 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(403, "Please verify your email before logging in.");
   }
 
-  if (!(bcrypt.compare(password, userFromDB.password))) {
+  if (!(await bcrypt.compare(password, userFromDB.password))) {
     throw new ApiError(400, "Password is wrong. Please try again");
   }
 
@@ -211,9 +211,15 @@ const logoutUser = asyncHandler(async (req, res) => {
       refreshToken: null,
     },
   });
+    const options = {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  };
   return res
-    .clearCookie("accessToken")
-    .clearCookie("refreshToken")
+    .clearCookie("accessToken",options)
+    .clearCookie("refreshToken",options)
     .status(200)
     .json(new ApiResponse(200, "Logged out successfully"));
 });
