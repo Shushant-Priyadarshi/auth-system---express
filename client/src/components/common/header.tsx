@@ -1,6 +1,6 @@
 import { useAuth } from "@/context/auth-context";
 import { Button } from "../ui/button";
-import { Menu } from "lucide-react";
+import {  Menu } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "../theme-provider";
@@ -15,14 +15,15 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+
 const Header = () => {
   const { theme, setTheme } = useTheme();
   const isDark = theme === "dark";
   const [isOpen, setIsOpen] = useState(false);
-  const { user, logout } = useAuth();
-
+  const { user, logout} = useAuth();
   const navigate = useNavigate();
   const isLoggedIn = user && user.email;
+
 
   const handleLogout = async () => {
     try {
@@ -46,7 +47,7 @@ const Header = () => {
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex gap-4">
-          {isLoggedIn ? (
+          {isLoggedIn  ? (
             <>
               <Button variant="outline" className="cursor-pointer">
                 {user.name}

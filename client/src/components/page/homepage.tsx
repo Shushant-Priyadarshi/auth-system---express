@@ -3,10 +3,11 @@ import Loader from "../common/loader";
 
 const Homepage = () => {
   const { user, isLoading } = useAuth();
+ const isLoggedIn = user && user.email;
+ 
+  if (isLoading && isLoggedIn) return <Loader />;
 
-  if (isLoading) return <Loader />;
-
-  const isLoggedIn = user && user.email;
+ 
 
   return (
     <div className="flex w-full justify-center items-center px-4 py-10">
