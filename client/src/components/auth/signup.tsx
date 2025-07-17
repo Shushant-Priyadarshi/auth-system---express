@@ -115,11 +115,11 @@ export default function SignUp() {
             <GoogleLogin
               onSuccess={handleGoogleLoginSubmit}
               onError={() => toast.error("Google Login Failed")}
-              width="100%"
-              theme="outline"
               text="signin_with"
               shape="rectangular"
+              width={335} 
             />
+             
           </div>
         </CardFooter>
       </Card>
