@@ -414,6 +414,7 @@ const googleOAuthLogin = asyncHandler(async (req, res) => {
     if (!userCreated) {
       throw new ApiError(500, "Something went wrong while saving the user");
     }
+    user = userCreated;
   }else{
     user=userExist
   }
