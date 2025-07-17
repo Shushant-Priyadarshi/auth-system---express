@@ -105,8 +105,6 @@ const handleGoogleLoginSubmit = async(credentialResponse:CredentialResponse) =>{
             <GoogleLogin
               onSuccess={handleGoogleLoginSubmit}
               onError={() => toast.error("Google Login Failed")}
-              width="100%"
-              theme="outline"
               text="signin_with"
               shape="rectangular"
             />
