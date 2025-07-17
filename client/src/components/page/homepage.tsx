@@ -48,7 +48,7 @@ const Homepage = () => {
 
       
     </div>
-    <div className="absolute top-5 right-5 md:top-10 md:right-70 z-100 rotate-5">
+    <div className="absolute top-5 right-5 md:top-10 md:right-70 z-100 rotate-5 md:rotate-12">
             <Badge
               variant="secondary"
               className="bg-blue-500 text-white dark:bg-blue-600"
@@ -56,7 +56,7 @@ const Homepage = () => {
               <UserRoundCog />
               <p>
                 Made By{" "}
-                <a href="https://github.com/Shushant-Priyadarshi" target="_blank">Shushant</a>
+                <a href="https://github.com/Shushant-Priyadarshi" target="_blank" rel="noopener">Shushant</a>
               </p>
             </Badge>
           </div>
