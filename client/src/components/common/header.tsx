@@ -3,8 +3,12 @@ import { Button } from "../ui/button";
 import { Menu } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTheme } from "../theme-provider";
+import { Moon, Sun } from "lucide-react";
 
 const Header = () => {
+   const { theme, setTheme } = useTheme();
+   const isDark = theme === "dark";
   const [isOpen, setIsOpen] = useState(false);
   const { user, logout } = useAuth();
 
@@ -22,7 +26,7 @@ const Header = () => {
   };
 
   return (
-    <header className="w-full bg-white  sticky top-0 z-50">
+    <header className="w-full   sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 md:px-58 py-3 flex justify-between items-center">
         {/* Logo */}
         <Link to="/" onClick={() => setIsOpen(false)}>
@@ -54,6 +58,18 @@ const Header = () => {
               </Link>
             </>
           )}
+          <div
+            onClick={() => setTheme(isDark ? "light" : "dark")}
+            className={`flex  items-center cursor-pointer transition-transform duration-500 active:scale-75
+                    ${isDark ? "rotate-180" : "rotate-0"}
+                    `}
+          >
+            {isDark ? (
+              <Sun className="h-6 w-6  rotate-0 transition-all text-yellow-500" />
+            ) : (
+              <Moon className="h-6 w-6 rotate-0 transition-all text-blue-500" />
+            )}
+          </div>
         </nav>
 
         {/* Mobile Menu Toggle */}
@@ -67,7 +83,7 @@ const Header = () => {
 
       {/* Mobile Dropdown Menu */}
       {isOpen && (
-        <div className="md:hidden bg-white shadow-md flex flex-col items-center gap-2 px-4 py-4 transition-all duration-300">
+        <div className="md:hidden  shadow-md flex flex-col items-center gap-2 px-4 py-4 transition-all duration-300">
           {isLoggedIn ? (
             <>
               <Button variant="outline" className="w-full" disabled>
@@ -91,6 +107,7 @@ const Header = () => {
           )}
         </div>
       )}
+      
     </header>
   );
 };

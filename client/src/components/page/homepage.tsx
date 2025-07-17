@@ -26,9 +26,9 @@ const Homepage = () => {
 
           {isLoggedIn && (
             <>
-              <p className="text-lg sm:text-xl font-medium">Email: {user.email}</p>
+              <div className="text-lg sm:text-xl font-medium">Email: {user.email}</div>
 
-              <p className="text-base sm:text-lg font-medium">
+              <div className="text-base sm:text-lg font-medium">
                 {user.emailVerified ? (
                   <div className="text-green-600 space-y-1">
                     <div>Email Verified ✅</div>
@@ -37,7 +37,7 @@ const Homepage = () => {
                 ) : (
                   <span className="text-red-600">❌ Email is not verified</span>
                 )}
-              </p>
+              </div>
             </>
           )}
         </div>

@@ -41,7 +41,7 @@ const OtpForm = () => {
 
   return (
     <div className="w-full mt-16 flex justify-center items-center px-4">
-      <div className="flex flex-col items-center gap-6 p-6 rounded-xl shadow-lg max-w-md w-full bg-white">
+      <div className="flex flex-col items-center gap-6 p-6 rounded-xl shadow-lg max-w-md w-full ">
         {/* Message */}
         <p className="text-center text-muted-foreground text-sm md:text-base">
           We've sent a 6-digit verification code to your email.

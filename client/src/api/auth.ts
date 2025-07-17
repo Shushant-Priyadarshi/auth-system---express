@@ -1,6 +1,7 @@
 import type { LoginResponse } from "@/features/response";
 import { axiosInstance } from "@/lib/axios.ts";
 
+//login user
 export const loginUser = async (email: string, password: string): Promise<LoginResponse> => {
 
     const response = await axiosInstance.post("/user/login", {
@@ -10,6 +11,7 @@ export const loginUser = async (email: string, password: string): Promise<LoginR
    return response.data
 };
 
+//signup user
 export const SignUpUser = async (
   name: string,
   email: string,
@@ -23,6 +25,7 @@ export const SignUpUser = async (
     return response.data;
 };
 
+//verify otp
 export const verifyOTP = async (email: string, otp: string) => {
     const response = await axiosInstance.post("/user/verify-otp", {
       email,
@@ -31,7 +34,20 @@ export const verifyOTP = async (email: string, otp: string) => {
     return response.data;
 };
 
+//logout user
 export const logoutUser = async () => {
   await axiosInstance.post("/user/logout");
   
 };
+
+//forgot password
+export const forgotPassword=async(email:string)=>{
+  const response = await axiosInstance.post("/user/forgot-password",{email});
+  return response.data;
+}
+
+//change password
+export const changePassword = async(token:string,newPassword:string) =>{
+  const response= await axiosInstance.post("/user/change-password",{token,newPassword});
+  return response.data;
+}

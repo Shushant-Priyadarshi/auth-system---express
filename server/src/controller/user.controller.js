@@ -2,10 +2,11 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import prisma from "../utils/prisma.js";
 import bcrypt from "bcrypt";
+import crypto from "crypto"
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 import jwt from "jsonwebtoken";
-import { sendVerificationEmail, generateOTP } from "../utils/sendMail.js";
+import { sendVerificationEmail, generateOTP, sendPasswordResetEmail } from "../utils/sendMail.js";
 
 //register user
 const registerUser = asyncHandler(async (req, res) => {
@@ -277,6 +278,79 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 });
 
+//forgot password
+const forgotPassword = asyncHandler(async(req,res) =>{
+  const {email} = req.body;
+  if(!email){
+    throw new ApiError(400,"email is required");
+  }
+  //check if the email exist or not
+  const userFromDB = await prisma.user.findUnique({
+    where:{
+      email
+    },
+  })
+  if(!userFromDB){
+    throw new ApiError(400,"No account found with provided email. Please register first.")
+  }
+  //generate a token
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  const expiry = new Date(Date.now() + 1000*60 * 15);
+
+  //update the db with generated reset token and expiry time
+  await prisma.user.update({
+    where:{
+      email:userFromDB.email,
+    },
+    data:{
+      resetToken:resetToken,
+      resetTokenExpiry:expiry,
+    }
+  });
+
+  //make a fronted link
+  const resetFrontendLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+  //a link is sent to email
+   await sendPasswordResetEmail(userFromDB.email,resetFrontendLink,userFromDB.name);
+
+  res.status(200).json(new ApiResponse(200,null,"Reset link hase been sent to your email."))
+  
+})
+
+const resetPassword = asyncHandler(async(req,res) =>{
+  const {token,newPassword} = req.body;
+  if(!token || !newPassword){
+    throw new ApiError(400,"token or new password is missing")
+  }
+  const user =await prisma.user.findFirst({
+    where:{
+      resetToken:token,
+      resetTokenExpiry:{
+        gte:new Date(),
+      }
+    }
+  })
+  if(!user){
+    throw new ApiError(400,"Token expired or invalid")
+  }
+
+  const hashedNewPassword = bcrypt.hashSync(newPassword,10);
+  const updatedUser = await prisma.user.update({
+    where:{
+      email:user.email,
+    },
+    data:{
+      password:hashedNewPassword,
+      resetToken:null,
+      resetTokenExpiry:null,
+    },
+  })
+  if(!updatedUser){
+    throw new ApiError(500,"Something went wrong while updating the user.")
+  }
+
+  res.status(200).json(new ApiResponse(200,null,"Password has been successfully Changed. Login now"));
+})
 //get profile
 const getUserProfile = asyncHandler(async (req, res) => {
   res
@@ -291,4 +365,6 @@ export {
   getUserProfile,
   refreshAccessToken,
   verifyOTP,
+  forgotPassword,
+  resetPassword
 };

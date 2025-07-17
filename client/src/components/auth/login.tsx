@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { toast } from "react-hot-toast";
+import { toast } from 'react-hot-toast';
 import {
   Card,
   CardContent,
@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label"
 import { useAuth } from "@/context/auth-context"
 import { useState } from "react"
 import type { AxiosError } from "axios";
+import { Link } from "react-router-dom";
 
 export default function Login (){
   const {login} = useAuth();
@@ -65,12 +66,12 @@ export default function Login (){
             <div className="grid gap-2">
               <div className="flex items-center">
                 <Label htmlFor="password">Password</Label>
-                <a
-                  href="#"
+                <Link
+                  to="/forgot-password"
                   className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                 >
                   Forgot your password?
-                </a>
+                </Link>
               </div>
               <Input id="password" type="password"    value={password}
                 onChange={(e)=>setPassword(e.target.value)}required />
@@ -79,7 +80,7 @@ export default function Login (){
         </form>
       </CardContent>
       <CardFooter className="flex-col gap-2">
-        <Button type="submit" className="w-full" onClick={handleLogin}>
+        <Button type="submit" className="w-full" onClick={handleLogin} disabled={loading}>
           {loading? "Logging..":"Log in"}
         </Button>
         <Button variant="outline" className="w-full">
