@@ -15,6 +15,8 @@ import { useAuth } from "@/context/auth-context"
 import { useState } from "react"
 import type { AxiosError } from "axios";
 import { Link } from "react-router-dom";
+import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
+import { handleGoogleSuccess } from "@/api/auth";
 
 export default function Login (){
   const {login} = useAuth();
@@ -39,6 +41,21 @@ export default function Login (){
     }
    
   }
+
+const handleGoogleLoginSubmit = async(credentialResponse:CredentialResponse) =>{
+  try {
+      const res = await handleGoogleSuccess(credentialResponse);
+      toast.success(res?.message)
+      setTimeout(()=>{
+      window.location.href="/"
+     }, 1500)
+  } catch (err) {
+    const error = err as AxiosError<{ message: string }>;
+    const message = error.response?.data?.message || "Login failed!";
+    toast.error(message);
+  }
+}
+
 
   return (
         <div className="w-full  mt-10  flex justify-center items-center">
@@ -84,9 +101,16 @@ export default function Login (){
         <Button type="submit" className="w-full" onClick={handleLogin} disabled={loading}>
           {loading? "Logging..":"Log in"}
         </Button>
-        <Button variant="outline" className="w-full">
-          Login with Google
-        </Button>
+        <div className="w-full">
+            <GoogleLogin
+              onSuccess={handleGoogleLoginSubmit}
+              onError={() => toast.error("Google Login Failed")}
+              width="100%"
+              theme="outline"
+              text="signin_with"
+              shape="rectangular"
+            />
+          </div>
       </CardFooter>
     </Card>
     </div>

@@ -1,4 +1,4 @@
-import { SignUpUser } from "@/api/auth";
+import { handleGoogleSuccess, SignUpUser } from "@/api/auth";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 import type { AxiosError } from "axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -38,6 +39,20 @@ export default function SignUp() {
       setLoading(false);
     }
   };
+
+  const handleGoogleLoginSubmit = async(credentialResponse:CredentialResponse) =>{
+  try {
+      const res = await handleGoogleSuccess(credentialResponse);
+      toast.success(res?.message)
+      setTimeout(()=>{
+      window.location.href="/"
+     }, 1500)
+  } catch (err) {
+    const error = err as AxiosError<{ message: string }>;
+    const message = error.response?.data?.message || "Login failed!";
+    toast.error(message);
+  }
+}
 
   return (
     <div className="w-full mt-10 flex justify-center items-center overflow-hidden">
@@ -96,9 +111,16 @@ export default function SignUp() {
           >
             {loading ? "Submitting..." : "Signup"}
           </Button>
-          <Button variant="outline" className="w-full">
-            Signup with Google
-          </Button>
+         <div className="w-full">
+            <GoogleLogin
+              onSuccess={handleGoogleLoginSubmit}
+              onError={() => toast.error("Google Login Failed")}
+              width="100%"
+              theme="outline"
+              text="signin_with"
+              shape="rectangular"
+            />
+          </div>
         </CardFooter>
       </Card>
     </div>

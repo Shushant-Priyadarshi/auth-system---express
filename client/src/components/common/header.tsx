@@ -52,13 +52,17 @@ const Header = () => {
                 {user.name}
               </Button>
               <Dialog>
-                <DialogTrigger className="cursor-pointer"><Button >Logout</Button></DialogTrigger>
+                <DialogTrigger className="cursor-pointer">
+                  <Button>Logout</Button>
+                </DialogTrigger>
                 <DialogContent>
-                  <DialogHeader >
-                    <DialogTitle className="self-center-safe" >Are you sure you want to logout?</DialogTitle>
+                  <DialogHeader>
+                    <DialogTitle className="self-center-safe">
+                      Are you sure you want to logout?
+                    </DialogTitle>
                     <DialogDescription className="flex justify-center gap-20 py-2 px-5 items-center">
                       <DialogClose asChild>
-                        <Button >Cancel</Button>
+                        <Button>Cancel</Button>
                       </DialogClose>
                       <Button onClick={handleLogout} className="cursor-pointer">
                         logout
@@ -108,9 +112,26 @@ const Header = () => {
               <Button variant="outline" className="w-full" disabled>
                 {user.name}
               </Button>
-              <Button onClick={handleLogout} className="w-full">
-                Logout
-              </Button>
+              <Dialog >
+                <DialogTrigger className="cursor-pointer">
+                  <Button className="w-full" >Logout</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle className="self-center-safe">
+                      Are you sure you want to logout?
+                    </DialogTitle>
+                    <DialogDescription className="flex justify-center gap-20 py-2 px-5 items-center">
+                      <DialogClose asChild>
+                        <Button>Cancel</Button>
+                      </DialogClose>
+                      <Button onClick={handleLogout} className="cursor-pointer">
+                        logout
+                      </Button>
+                    </DialogDescription>
+                  </DialogHeader>
+                </DialogContent>
+              </Dialog>
             </>
           ) : (
             <>

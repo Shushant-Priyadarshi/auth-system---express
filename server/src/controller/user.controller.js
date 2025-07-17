@@ -2,11 +2,16 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import prisma from "../utils/prisma.js";
 import bcrypt from "bcrypt";
-import crypto from "crypto"
+import crypto from "crypto";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 import jwt from "jsonwebtoken";
-import { sendVerificationEmail, generateOTP, sendPasswordResetEmail } from "../utils/sendMail.js";
+import {
+  sendVerificationEmail,
+  generateOTP,
+  sendPasswordResetEmail,
+} from "../utils/sendMail.js";
+import { googleClient } from "../app.js";
 
 //register user
 const registerUser = asyncHandler(async (req, res) => {
@@ -42,9 +47,9 @@ const registerUser = asyncHandler(async (req, res) => {
       expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 mins from now
     },
   });
-   //send verification main
-  await sendVerificationEmail(email, otp,name);
-  
+  //send verification main
+  await sendVerificationEmail(email, otp, name);
+
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const createdUser = await prisma.user.create({
@@ -58,7 +63,6 @@ const registerUser = asyncHandler(async (req, res) => {
   if (!createdUser) {
     throw new ApiError(500, "Something went wrong while registering the user");
   }
- 
 
   return res
     .status(200)
@@ -108,7 +112,7 @@ const generateAccessAndRefreshToken = async (userId) => {
     }
     const accessToken = generateAccessToken(userFromDB);
     const refreshToken = generateRefreshToken(userFromDB);
- 
+
     //userFromDB.refreshToken = refreshToken;
     await prisma.user.update({
       where: {
@@ -163,19 +167,17 @@ const loginUser = asyncHandler(async (req, res) => {
   );
 
   const userResponse = {
-  id: userFromDB.id,
-  name: userFromDB.name,
-  email: userFromDB.email,
-  emailVerified: userFromDB.emailVerified,
- 
-};
-
+    id: userFromDB.id,
+    name: userFromDB.name,
+    email: userFromDB.email,
+    emailVerified: userFromDB.emailVerified,
+  };
 
   const options = {
     httpOnly: true,
     secure: true,
-    sameSite: "strict",     
-    maxAge: 7 * 24 * 60 * 60 * 1000 
+    sameSite: "strict",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   };
 
   return res
@@ -219,18 +221,17 @@ const logoutUser = asyncHandler(async (req, res) => {
 //refresh access token
 const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken =
-    req.cookies.refreshToken || req.body.refreshToken; 
-  if (!incomingRefreshToken ) {
+    req.cookies.refreshToken || req.body.refreshToken;
+  if (!incomingRefreshToken) {
     throw new ApiError(401, "Unauthorized access");
   }
 
   try {
-    const decodedToken =  jwt.verify(
+    const decodedToken = jwt.verify(
       incomingRefreshToken,
       process.env.REFRESH_TOKEN_SECRET
     );
-    
-    
+
     if (!decodedToken) {
       throw new ApiError(401, "Invalid refresh token! Unauthorized request");
     }
@@ -239,7 +240,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         id: decodedToken.userId,
       },
     });
- 
+
     if (!userFromDB) {
       throw new ApiError(
         401,
@@ -252,16 +253,15 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 
     const options = {
-    httpOnly: true,
-    secure: true,
-    sameSite: "strict",     
-    maxAge: 7 * 24 * 60 * 60 * 1000 
-  };
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    };
 
-    const { accessToken, refreshToken:newRefreshToken } =
+    const { accessToken, refreshToken: newRefreshToken } =
       await generateAccessAndRefreshToken(userFromDB.id);
-     
-      
+
     return res
       .status(200)
       .cookie("accessToken", accessToken, options)
@@ -279,83 +279,177 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 });
 
 //forgot password
-const forgotPassword = asyncHandler(async(req,res) =>{
-  const {email} = req.body;
-  if(!email){
-    throw new ApiError(400,"email is required");
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    throw new ApiError(400, "email is required");
   }
   //check if the email exist or not
   const userFromDB = await prisma.user.findUnique({
-    where:{
-      email
+    where: {
+      email,
     },
-  })
-  if(!userFromDB){
-    throw new ApiError(400,"No account found with provided email. Please register first.")
+  });
+  if (!userFromDB) {
+    throw new ApiError(
+      400,
+      "No account found with provided email. Please register first."
+    );
   }
   //generate a token
   const resetToken = crypto.randomBytes(32).toString("hex");
-  const expiry = new Date(Date.now() + 1000*60 * 15);
+  const expiry = new Date(Date.now() + 1000 * 60 * 15);
 
   //update the db with generated reset token and expiry time
   await prisma.user.update({
-    where:{
-      email:userFromDB.email,
+    where: {
+      email: userFromDB.email,
     },
-    data:{
-      resetToken:resetToken,
-      resetTokenExpiry:expiry,
-    }
+    data: {
+      resetToken: resetToken,
+      resetTokenExpiry: expiry,
+    },
   });
 
   //make a fronted link
   const resetFrontendLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
   //a link is sent to email
-   await sendPasswordResetEmail(userFromDB.email,resetFrontendLink,userFromDB.name);
+  await sendPasswordResetEmail(
+    userFromDB.email,
+    resetFrontendLink,
+    userFromDB.name
+  );
 
-  res.status(200).json(new ApiResponse(200,null,"Reset link hase been sent to your email."))
-  
-})
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, null, "Reset link hase been sent to your email.")
+    );
+});
 
-const resetPassword = asyncHandler(async(req,res) =>{
-  const {token,newPassword} = req.body;
-  if(!token || !newPassword){
-    throw new ApiError(400,"token or new password is missing")
+//reset password
+const resetPassword = asyncHandler(async (req, res) => {
+  const { token, newPassword } = req.body;
+  if (!token || !newPassword) {
+    throw new ApiError(400, "token or new password is missing");
   }
-  const user =await prisma.user.findFirst({
-    where:{
-      resetToken:token,
-      resetTokenExpiry:{
-        gte:new Date(),
-      }
-    }
-  })
-  if(!user){
-    throw new ApiError(400,"Token expired or invalid")
+  const user = await prisma.user.findFirst({
+    where: {
+      resetToken: token,
+      resetTokenExpiry: {
+        gte: new Date(),
+      },
+    },
+  });
+  if (!user) {
+    throw new ApiError(400, "Token expired or invalid");
   }
 
-  const hashedNewPassword = bcrypt.hashSync(newPassword,10);
+  const hashedNewPassword = bcrypt.hashSync(newPassword, 10);
   const updatedUser = await prisma.user.update({
-    where:{
-      email:user.email,
+    where: {
+      email: user.email,
     },
-    data:{
-      password:hashedNewPassword,
-      resetToken:null,
-      resetTokenExpiry:null,
+    data: {
+      password: hashedNewPassword,
+      resetToken: null,
+      resetTokenExpiry: null,
     },
-  })
-  if(!updatedUser){
-    throw new ApiError(500,"Something went wrong while updating the user.")
+  });
+  if (!updatedUser) {
+    throw new ApiError(500, "Something went wrong while updating the user.");
   }
 
-  res.status(200).json(new ApiResponse(200,null,"Password has been successfully Changed. Login now"));
-})
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        null,
+        "Password has been successfully Changed. Login now"
+      )
+    );
+});
+
 //get profile
 const getUserProfile = asyncHandler(async (req, res) => {
   res
     .status(201)
     .json(new ApiResponse(200, req.user, "User fetched successfully"));
+});
+
+//oauth controller
+const googleOAuthLogin = asyncHandler(async (req, res) => {
+  const { credential } = req.body;
+  if (!credential) {
+    throw new ApiError(400, "No google credentials found");
+  }
+  const ticket = await googleClient.verifyIdToken({
+    idToken: credential,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
+  const payload = ticket.getPayload();
+  const { name, email, email_verified } = payload;
+
+  const userExist = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+  let user;
+  if (!userExist) {
+    const userCreated = await prisma.user.create({
+      data: {
+        name,
+        email,
+        emailVerified: email_verified,
+      },
+    });
+    if (!userCreated) {
+      throw new ApiError(500, "Something went wrong while saving the user");
+    }
+  }else{
+    user=userExist
+  }
+  const accessToken = generateAccessToken(user);
+  const refreshToken = generateRefreshToken(user);
+
+  await prisma.user.update({
+    where: {
+      id: user.id,
+    },
+    data: {
+      refreshToken: refreshToken,
+    },
+  });
+
+  const userResponse = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    emailVerified: user.emailVerified,
+  };
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  };
+  return res
+    .status(201)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(
+        201,
+        {
+          user: userResponse,
+          accessToken,
+        },
+        "Logged In successfully"
+      )
+    );
 });
 
 export {
@@ -366,5 +460,6 @@ export {
   refreshAccessToken,
   verifyOTP,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  googleOAuthLogin,
 };

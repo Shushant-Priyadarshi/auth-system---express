@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   forgotPassword,
   getUserProfile,
+  googleOAuthLogin,
   loginUser,
   logoutUser,
   refreshAccessToken,
@@ -21,5 +22,6 @@ router.route("/user-profile").get(verifyJwt, getUserProfile);
 router.route("/refresh-access-token").post(refreshAccessToken);
 router.route("/forgot-password").post(forgotPassword);
 router.route("/change-password").post(resetPassword)
+router.route("/google-login").post(googleOAuthLogin)
 
 export default router;
