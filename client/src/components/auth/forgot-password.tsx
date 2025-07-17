@@ -23,15 +23,22 @@ const ForgotPassword = () => {
     try {
       const data = await forgotPassword(email);
       toast.success(data?.message);
-      setTimeout(()=>toast("This window will be close automatically in few seconds"),2000 )
-      setTimeout(() => window.close(),9000);
+      setTimeout(
+        () => toast("This window will be close automatically in few seconds"),
+        2000
+      );
+      if (window.opener) {
+        setTimeout(() => window.close(), 9000);
+      } else {
+        toast("You can now close this window.");
+      }
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
       const message = error.response?.data?.message || "Login failed!";
       toast.error(message);
     } finally {
       setLoading(false);
-      setEmail("")
+      setEmail("");
     }
   };
 
