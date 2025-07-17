@@ -1,6 +1,7 @@
 import { useAuth } from "@/context/auth-context";
 import Loader from "../common/loader";
-
+import { UserRoundCog } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 const Homepage = () => {
   const { user, isLoading } = useAuth();
  const isLoggedIn = user && user.email;
@@ -10,7 +11,8 @@ const Homepage = () => {
  
 
   return (
-    <div className="flex w-full justify-center items-center px-4 py-10">
+    <div className="relative">
+    <div className="flex w-full justify-center items-center mt-7 px-4 py-10">
       <div className="flex flex-col items-center gap-6 max-w-2xl text-center">
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight">
           Welcome To <span className="italic text-primary">Authify</span>
@@ -43,6 +45,21 @@ const Homepage = () => {
           )}
         </div>
       </div>
+
+      
+    </div>
+    <div className="absolute top-5 right-5 md:top-10 md:right-70 z-100 rotate-5">
+            <Badge
+              variant="secondary"
+              className="bg-blue-500 text-white dark:bg-blue-600"
+            >
+              <UserRoundCog />
+              <p>
+                Made By{" "}
+                <a href="https://github.com/Shushant-Priyadarshi" target="_blank">Shushant</a>
+              </p>
+            </Badge>
+          </div>
     </div>
   );
 };
