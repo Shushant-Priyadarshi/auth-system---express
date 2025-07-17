@@ -16,7 +16,7 @@ export const sendVerificationEmail = async (to, otp, userName) => {
     });
 
     await transporter.sendMail({
-      from: `"DragThat*hit" <${process.env.SMTP_USER}>`,
+      from: `"Authify" <${process.env.SMTP_USER}>`,
       to,
       subject: "Your OTP for Email Verification",
       html: getEmailHTMLTemplate(otp, userName),
@@ -72,7 +72,7 @@ const getPasswordResetEmailTemplate = (name, resetLink) => `
 
     <p style="font-size: 14px; color: #999; margin-top: 40px; border-top: 1px solid #eee; padding-top: 10px;">
       Stay secure,<br/>
-      — DragThat*hit Team
+      — Authify
     </p>
   </div>
 `;
@@ -93,7 +93,7 @@ const getEmailHTMLTemplate = (otp, name) => `
 
     <p style="font-size: 14px; color: #999; margin-top: 40px; border-top: 1px solid #eee; padding-top: 10px;">
       If you didn’t request this, please ignore this email.<br/>
-      — DragThat*hit Team
+      — Authify
     </p>
   </div>
 `;
