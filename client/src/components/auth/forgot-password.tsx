@@ -22,7 +22,6 @@ const ForgotPassword = () => {
     setLoading(true);
     try {
       const data = await forgotPassword(email);
-      console.log(data);
       toast.success(data?.message);
       setTimeout(()=>toast("This window will be close automatically in few seconds"),2000 )
       setTimeout(() => window.close(),9000);

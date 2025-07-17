@@ -38,7 +38,6 @@ const ChangePassword = () => {
         throw new Error("Password does not match");
       }
       const response = await changePassword(token as string, cnfPass);
-      console.log(response);
       toast.success(response?.message);
       setTimeout(() => navigate("/login"), 2000);
     } catch (err) {

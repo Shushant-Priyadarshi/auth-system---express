@@ -5,21 +5,30 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "../theme-provider";
 import { Moon, Sun } from "lucide-react";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const Header = () => {
-   const { theme, setTheme } = useTheme();
-   const isDark = theme === "dark";
+  const { theme, setTheme } = useTheme();
+  const isDark = theme === "dark";
   const [isOpen, setIsOpen] = useState(false);
   const { user, logout } = useAuth();
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const isLoggedIn = user && user.email;
 
   const handleLogout = async () => {
     try {
       await logout();
-      navigate("/login")
-      setIsOpen(false); 
+      navigate("/login");
+      setIsOpen(false);
     } catch (error) {
       console.log("Error logging out", error);
     }
@@ -42,9 +51,22 @@ const Header = () => {
               <Button variant="outline" className="cursor-pointer">
                 {user.name}
               </Button>
-              <Button onClick={handleLogout} className="cursor-pointer">
-                Logout
-              </Button>
+              <Dialog>
+                <DialogTrigger className="cursor-pointer"><Button >Logout</Button></DialogTrigger>
+                <DialogContent>
+                  <DialogHeader >
+                    <DialogTitle className="self-center-safe" >Are you sure you want to logout?</DialogTitle>
+                    <DialogDescription className="flex justify-center gap-20 py-2 px-5 items-center">
+                      <DialogClose asChild>
+                        <Button >Cancel</Button>
+                      </DialogClose>
+                      <Button onClick={handleLogout} className="cursor-pointer">
+                        logout
+                      </Button>
+                    </DialogDescription>
+                  </DialogHeader>
+                </DialogContent>
+              </Dialog>
             </>
           ) : (
             <>
@@ -74,10 +96,7 @@ const Header = () => {
 
         {/* Mobile Menu Toggle */}
         <div className="md:hidden">
-          <Menu
-            onClick={() => setIsOpen(!isOpen)}
-            className="cursor-pointer"
-          />
+          <Menu onClick={() => setIsOpen(!isOpen)} className="cursor-pointer" />
         </div>
       </div>
 
@@ -107,7 +126,6 @@ const Header = () => {
           )}
         </div>
       )}
-      
     </header>
   );
 };
