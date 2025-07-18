@@ -13,6 +13,15 @@ import {
 } from "../utils/sendMail.js";
 import { googleClient } from "../app.js";
 
+  const options = {
+    httpOnly: true,
+    domain: process.env.COOKIE_DOMAIN,
+    path: "/",
+    secure: true,
+    sameSite: "None",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  };
+
 //register user
 const registerUser = asyncHandler(async (req, res) => {
   const { email, password, name } = req.body;
@@ -173,12 +182,6 @@ const loginUser = asyncHandler(async (req, res) => {
     emailVerified: userFromDB.emailVerified,
   };
 
- const options = {
-    httpOnly: true,
-    secure: true,
-    sameSite: "None",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  };
 
   return res
     .status(201)
@@ -211,15 +214,10 @@ const logoutUser = asyncHandler(async (req, res) => {
       refreshToken: null,
     },
   });
-    const options = {
-    httpOnly: true,
-    secure: true,
-    sameSite: "None",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  };
+  
   return res
-    .clearCookie("accessToken",options)
-    .clearCookie("refreshToken",options)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
     .status(200)
     .json(new ApiResponse(200, "Logged out successfully"));
 });
@@ -258,12 +256,6 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       throw new ApiError(401, "Refresh token expired or used");
     }
 
-    const options = {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    };
 
     const { accessToken, refreshToken: newRefreshToken } =
       await generateAccessAndRefreshToken(userFromDB.id);
@@ -415,8 +407,8 @@ const googleOAuthLogin = asyncHandler(async (req, res) => {
       throw new ApiError(500, "Something went wrong while saving the user");
     }
     user = userCreated;
-  }else{
-    user=userExist
+  } else {
+    user = userExist;
   }
   const accessToken = generateAccessToken(user);
   const refreshToken = generateRefreshToken(user);
@@ -437,12 +429,7 @@ const googleOAuthLogin = asyncHandler(async (req, res) => {
     emailVerified: user.emailVerified,
   };
 
-  const options = {
-    httpOnly: true,
-    secure: true,
-    sameSite: "None",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  };
+
   return res
     .status(201)
     .cookie("accessToken", accessToken, options)
