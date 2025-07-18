@@ -62,7 +62,7 @@ const OtpForm = () => {
           </InputOTPGroup>
         </InputOTP>
 
-         <Button onClick={handleVerify} disabled={loading}>
+         <Button onClick={handleVerify} disabled={loading || otp.length !== 6}>
           {loading ? "Verifying..." : "Verify OTP"}
         </Button>
       </div>
