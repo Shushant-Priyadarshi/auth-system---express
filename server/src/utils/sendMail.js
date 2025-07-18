@@ -38,7 +38,7 @@ export const sendPasswordResetEmail = async (to, resetLink, userName) => {
     });
 
     await transporter.sendMail({
-      from: `"DragThat*hit" <${process.env.SMTP_USER}>`,
+      from: `"Authify" <${process.env.SMTP_USER}>`,
       to,
       subject: "Your password reset link",
       html: getPasswordResetEmailTemplate(userName, resetLink),
