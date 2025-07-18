@@ -15,12 +15,10 @@ import { googleClient } from "../app.js";
 
   const options = {
     httpOnly: true,
-    domain: process.env.COOKIE_DOMAIN,
-    path: "/",
     secure: true,
-    sameSite: "None",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
   };
+
+  
 
 //register user
 const registerUser = asyncHandler(async (req, res) => {
